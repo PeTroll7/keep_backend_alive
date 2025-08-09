@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Server Keep-Alive</title>
+</head>
+<body>
+  <h1>Keep server running for</h1>
+  <button onclick="startPinging(30 * 60)">30 min</button>
+  <button onclick="startPinging(60 * 60)">1 hour</button>
+  <button onclick="startPinging(120 * 60)">2 hours</button>
+
+  <script>
+    const SERVER_URL = "https://consultations-backend.onrender.com/";
+
+    let pingInterval = null;
+
+    function startPinging(totalSeconds) {
+      if (pingInterval) clearInterval(pingInterval);
+
+      let elapsed = 0;
+      const pingDelay = 300; // seconds between pings
+
+      // Function to ping server and log response
+      function pingServer() {
+        fetch(SERVER_URL)
+          .then(response => response.text())  // use .json() if backend sends JSON
+          .then(data => {
+            console.log(`Ping response at ${elapsed} seconds:`);
+            console.log(data);
+          })
+          .catch(console.error);
+      }
+
+      // First immediate ping
+      pingServer();
+      console.log(`Ping sent. Elapsed: ${elapsed} seconds`);
+
+      pingInterval = setInterval(() => {
+        elapsed += pingDelay;
+        pingServer();
+
+        if (elapsed >= totalSeconds) {
+          clearInterval(pingInterval);
+          console.log(`Stopping pings after ${totalSeconds / 60} minutes.`);
+        }
+      }, pingDelay * 1000);
+    }
+  </script>
+</body>
+</html>
